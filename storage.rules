@@ -1,0 +1,10 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /proofs/{allPaths=**} {
+      allow read: if true; // Allow anyone to see for status check (or restrict to admin later)
+      allow write: if request.resource.size < 5 * 1024 * 1024 // 5MB
+                   && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

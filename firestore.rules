@@ -1,0 +1,107 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Participant Validation ---
+    function isValidParticipant(data) {
+      return data.keys().hasAll(['name', 'qurbanFor', 'whatsapp', 'type', 'amount', 'paymentStatus', 'createdAt', 'updatedAt']) &&
+             data.name is string && data.name.size() <= 100 &&
+             data.qurbanFor is string && data.qurbanFor.size() <= 100 &&
+             data.whatsapp is string && data.whatsapp.size() <= 20 &&
+             data.type in ['KAMBING', 'SAPI'] &&
+             data.amount is number && data.amount > 0 &&
+             data.paymentStatus in ['PENDING', 'VERIFYING', 'PAID', 'REJECTED'] &&
+             data.updatedAt == request.time &&
+             (!('address' in data) || (data.address is string && data.address.size() <= 500)) &&
+             (!('groupId' in data) || (data.groupId is string && isValidId(data.groupId))) &&
+             (!('slotNumber' in data) || (data.slotNumber is int && data.slotNumber >= 1 && data.slotNumber <= 7)) &&
+             (!('paymentProofUrl' in data) || (data.paymentProofUrl == null || (data.paymentProofUrl is string && data.paymentProofUrl.size() <= 1000)));
+    }
+
+    // --- Collective Validation ---
+    function isValidGroup(data) {
+      return data.keys().hasAll(['groupNumber', 'type', 'participantIds', 'isFull', 'createdAt', 'updatedAt']) &&
+             data.groupNumber is int &&
+             data.type == 'SAPI' &&
+             data.participantIds is list && data.participantIds.size() <= 7 &&
+             data.isFull is bool &&
+             data.updatedAt == request.time &&
+             (!('totalAmount' in data) || data.totalAmount is number);
+    }
+
+    // --- Rules for Participants ---
+    match /participants/{participantId} {
+      allow get: if true; // Public lookup by ID for "Cek Status"
+      allow list: if isAdmin(); // Only admins can list all participants
+      
+      allow create: if isValidId(participantId) && 
+                      isValidParticipant(incoming()) && 
+                      incoming().createdAt == request.time &&
+                      (incoming().paymentStatus == 'PENDING' || (incoming().paymentStatus == 'VERIFYING' && incoming().paymentProofUrl != null));
+      
+      allow update: if (
+        isAdmin() ||
+        (
+          // User updating their own for verification (uploading proof)
+          incoming().diff(existing()).affectedKeys().hasOnly(['paymentProofUrl', 'paymentStatus', 'updatedAt']) &&
+          incoming().paymentStatus == 'VERIFYING' &&
+          incoming().paymentProofUrl != null &&
+          isValidParticipant(incoming())
+        )
+      );
+      
+      allow delete: if isAdmin();
+    }
+
+    // --- Rules for Groups ---
+    match /groups/{groupId} {
+      allow get: if true;
+      allow list: if true; // Public can see slots
+      
+      allow create: if isValidId(groupId) && isValidGroup(incoming()) && incoming().createdAt == request.time;
+      
+      allow update: if isAdmin() || (
+        // Allow adding participant ID during registration
+        incoming().diff(existing()).affectedKeys().hasOnly(['participantIds', 'isFull', 'totalAmount', 'updatedAt']) &&
+        incoming().participantIds.size() <= 7 &&
+        isValidGroup(incoming())
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // --- Rules for Admins (The trigger) ---
+    match /admins/{adminId} {
+      allow read: if isSignedIn() && request.auth.uid == adminId;
+      allow create: if isSignedIn() && 
+                      request.auth.token.email == "adityapratamaraissa@gmail.com" && 
+                      request.auth.uid == adminId;
+      allow write: if isAdmin(); // Modified from false to allow admins to manage other admins later if needed
+    }
+  }
+}

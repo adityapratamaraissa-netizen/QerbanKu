@@ -1,0 +1,42 @@
+{
+  "entities": {
+    "Participant": {
+      "title": "Participant",
+      "description": "Data peserta qurban",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Nama pendaftar" },
+        "qurbanFor": { "type": "string", "description": "Nama atas qurban" },
+        "whatsapp": { "type": "string", "description": "Nomor WhatsApp" },
+        "address": { "type": "string", "description": "Alamat" },
+        "type": { "type": "string", "enum": ["KAMBING", "SAPI"], "description": "Jenis qurban" },
+        "groupId": { "type": "string", "description": "ID Kelompok Sapi jika jenis Sapi" },
+        "slotNumber": { "type": "integer", "description": "Nomor urut dalam kelompok" },
+        "amount": { "type": "number", "description": "Nominal pembayaran" },
+        "paymentStatus": { "type": "string", "enum": ["PENDING", "VERIFYING", "PAID", "REJECTED"] },
+        "paymentProofUrl": { "type": "string", "format": "uri", "description": "URL bukti transfer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "qurbanFor", "whatsapp", "type", "amount", "paymentStatus", "createdAt"]
+    },
+    "QurbanGroup": {
+      "title": "QurbanGroup",
+      "description": "Kelompok patungan sapi",
+      "type": "object",
+      "properties": {
+        "groupNumber": { "type": "integer", "description": "Urutan sapi" },
+        "type": { "type": "string", "enum": ["SAPI"] },
+        "participantIds": { "type": "array", "items": { "type": "string" } },
+        "isFull": { "type": "boolean" },
+        "totalAmount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["groupNumber", "type", "participantIds", "isFull", "createdAt"]
+    }
+  },
+  "firestore": {
+    "participants": { "schema": "Participant", "description": "Koleksi data peserta" },
+    "groups": { "schema": "QurbanGroup", "description": "Koleksi data kelompok sapi" }
+  }
+}

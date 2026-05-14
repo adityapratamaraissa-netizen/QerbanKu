@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", serif;
+  
+  --color-primary: #1B5E20; /* Dark Green */
+  --color-primary-light: #2E7D32; 
+  --color-secondary: #C5A059; /* Gold/Emas */
+  --color-secondary-light: #D4AF37;
+  --color-accent: #E8F5E9; /* Light Green Tint */
+  
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2.5rem;
+}
+
+@layer base {
+  body {
+    @apply bg-[#F4F7F5] text-[#2D3436] font-sans antialiased transition-colors duration-300;
+  }
+}
+
+.dark body {
+  @apply bg-[#0A100B] text-stone-100;
+}
+
+/* Islamic Geometric Pattern Background */
+.bg-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l5.878 18.09h19.022l-15.39 11.18 5.878 18.09-15.388-11.18-15.388 11.18 5.878-18.09-15.39-11.18h19.022z' fill='%23065f46' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+}
+
+.dark .bg-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l5.878 18.09h19.022l-15.39 11.18 5.878 18.09-15.388-11.18-15.388 11.18 5.878-18.09-15.39-11.18h19.022z' fill='%2310b981' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+}
+
+.glass {
+  @apply bg-white/70 backdrop-blur-md border border-stone-200/50 shadow-sm;
+}
+
+.dark .glass {
+  @apply bg-stone-900/70 border-stone-800/50;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
