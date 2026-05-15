@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Sparkles, MessageSquare, Send, X, Bot, Info, Heart } from "lucide-react";
-import { GoogleGenAI } from "@google/genai";
 import { cn } from "../lib/utils";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export default function AIGuide() {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,24 +15,23 @@ export default function AIGuide() {
     if (!input.trim() || isLoading) return;
 
     const userMessage = input.trim();
+    const newMessages = [...messages, { role: 'user' as const, content: userMessage }];
+    
     setInput("");
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setMessages(newMessages);
     setIsLoading(true);
 
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: [
-          ...messages.map(m => ({ role: m.role, parts: [{ text: m.content }] })),
-          { role: 'user', parts: [{ text: userMessage }] }
-        ],
-        config: {
-          systemInstruction: "Anda adalah asisten cerdas untuk aplikasi 'Kurban AI' di Masjid Miftahul Huda. Tugas Anda adalah membantu calon mudhohi memahami ibadah qurban. Berikan informasi tentang: 1. Perbedaan qurban Sapi (patungan/kolektif) vs Kambing (individu). 2. Manfaat qurban digital (transparansi, kemudahan). 3. Hukum fiqh dasar qurban secara ramah dan edukatif. 4. Harga di aplikasi kami: Kambing 3.5jt, Sapi Patungan 3.8jt. Gunakan gaya bahasa santun, inspiratif, dan persuasif. Singkat dan padat.",
-        }
+      const response = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: newMessages })
       });
 
-      const modelResponse = response.text || "Maaf, saya sedang mengalami kendala. Silakan coba lagi nanti.";
-      setMessages(prev => [...prev, { role: 'model', content: modelResponse }]);
+      if (!response.ok) throw new Error("Failed to fetch AI response");
+      
+      const data = await response.json();
+      setMessages(prev => [...prev, { role: 'model', content: data.text }]);
     } catch (error) {
       console.error("AI Error:", error);
       setMessages(prev => [...prev, { role: 'model', content: "Maaf, layanan AI sedang sibuk. Silakan tanyakan langsung ke panitia via WhatsApp." }]);

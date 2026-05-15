@@ -2,5 +2,7 @@
   "name": "QurbanKu",
   "description": "Platform panitia qurban digital modern untuk pengelolaan pendaftaran, kelompok sapi, dan cetak kartu qurban.",
   "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
