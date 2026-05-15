@@ -305,6 +305,99 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Animal Catalog Section */}
+      <section className="py-32 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
+            <div className="space-y-4">
+              <span className="text-secondary font-bold text-xs uppercase tracking-widest">Pilihan Terbaik</span>
+              <h2 className="text-5xl font-bold text-[#2D3436] tracking-tight">Hewan Qurban <br />Kualitas Super.</h2>
+            </div>
+            <p className="text-stone-500 max-w-md leading-relaxed">Semua hewan telah melewati seleksi kesehatan ketat oleh tim ahli dan bersertifikat ASUH (Aman, Sehat, Utuh, Halal).</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            {/* Sapi Card */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="group relative overflow-hidden rounded-[3rem] bg-stone-50 border border-stone-100"
+            >
+              <div className="p-12 space-y-8">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <h3 className="text-3xl font-bold text-[#2D3436]">Sapi Limousin</h3>
+                    <p className="text-stone-400 font-bold text-xs uppercase tracking-widest">Kolektif 7 Orang</p>
+                  </div>
+                  <span className="bg-primary/10 text-primary px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap">
+                    Best Value
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-[10px] font-bold text-stone-400 uppercase">Per Orang</span>
+                  <p className="text-5xl font-bold text-primary">Rp 3,8 Juta</p>
+                </div>
+                <ul className="space-y-4 pt-6 border-t border-stone-200">
+                  <li className="flex items-center gap-3 text-stone-600 font-medium">
+                    <CheckCircle2 className="text-primary" size={18} /> Bobot Estimasi: 400-500kg
+                  </li>
+                  <li className="flex items-center gap-3 text-stone-600 font-medium">
+                    <CheckCircle2 className="text-primary" size={18} /> Sehat & Bebas PMK
+                  </li>
+                  <li className="flex items-center gap-3 text-stone-600 font-medium">
+                    <CheckCircle2 className="text-primary" size={18} /> Termasuk Biaya Potong
+                  </li>
+                </ul>
+                <Link to="/daftar" className="block w-full py-5 bg-white text-primary text-center rounded-2xl font-bold border border-primary/20 group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+                  Pilih Kolektif Sapi
+                </Link>
+              </div>
+            </motion.div>
+
+            {/* Kambing Card */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="group relative overflow-hidden rounded-[3rem] bg-primary text-white"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-bl-full translate-x-10 -translate-y-10"></div>
+              <div className="p-12 space-y-8">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <h3 className="text-3xl font-bold">Kambing Etawa</h3>
+                    <p className="text-white/60 font-bold text-xs uppercase tracking-widest">Kurban Individu</p>
+                  </div>
+                  <span className="bg-secondary text-primary px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap">
+                    Recommended
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-[10px] font-bold text-white/40 uppercase">Per Ekor</span>
+                  <p className="text-5xl font-bold">Rp 3,5 Juta</p>
+                </div>
+                <ul className="space-y-4 pt-6 border-t border-white/20">
+                  <li className="flex items-center gap-3 text-white/80 font-medium">
+                    <CheckCircle2 className="text-secondary" size={18} /> Bobot Estimasi: 35-45kg
+                  </li>
+                  <li className="flex items-center gap-3 text-white/80 font-medium">
+                    <CheckCircle2 className="text-secondary" size={18} /> Usia Cukup Syar'i (2+ Thn)
+                  </li>
+                  <li className="flex items-center gap-3 text-white/80 font-medium">
+                    <CheckCircle2 className="text-secondary" size={18} /> Antar Gratis (Radius 5km)
+                  </li>
+                </ul>
+                <Link to="/daftar" className="block w-full py-5 bg-white text-primary text-center rounded-2xl font-bold hover:bg-stone-50 transition-all shadow-lg">
+                  Pilih Kambing Personal
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-32 bg-white">
         <div className="max-w-7xl mx-auto px-4">

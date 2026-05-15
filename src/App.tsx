@@ -9,6 +9,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import WhatsAppFloat from "./components/WhatsAppFloat";
 import AIGuide from "./components/AIGuide";
+import InstallPWA from "./components/InstallPWA";
 import Home from "./pages/Home";
 import Register from "./pages/Register";
 import CowGroups from "./pages/CowGroups";
@@ -38,6 +39,7 @@ export default function App() {
         <Footer />
         <WhatsAppFloat />
         <AIGuide />
+        <InstallPWA />
         <Toaster position="top-center" />
       </div>
     </Router>
