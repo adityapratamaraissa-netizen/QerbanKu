@@ -3,7 +3,8 @@ import { QurbanConfig } from "./types";
 export const APP_CONFIG: QurbanConfig = {
   kambingPrice: 3500000,
   sapiJointPrice: 3800000, // Per person for 1/7 cow
-  eidAlAdhaDate: "2026-05-27T00:00:00Z" // Updated to 27 May as requested
+  eidAlAdhaDate: "2026-05-27T00:00:00Z", // Updated to 27 May as requested
+  logoUrl: "https://cdn-icons-png.flaticon.com/512/616/616489.png"
 };
 
 export const NAV_LINKS = [

@@ -3,7 +3,7 @@ const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
-  'https://cdn-icons-png.flaticon.com/512/2600/2600185.png'
+  'https://cdn-icons-png.flaticon.com/512/616/616489.png'
 ];
 
 // Install Event

@@ -1,5 +1,6 @@
 import { Heart, Mail, Phone, MapPin, Instagram, Facebook, Twitter } from "lucide-react";
 import { Link } from "react-router-dom";
+import { APP_CONFIG } from "../constants";
 
 export default function Footer() {
   return (
@@ -8,8 +9,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-20">
           <div className="space-y-8">
             <Link to="/" className="flex items-center space-x-3 group">
-              <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center text-white shadow-xl shadow-primary/20 group-hover:scale-110 transition-transform">
-                <Heart size={20} fill="currentColor" />
+              <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center text-white shadow-xl shadow-primary/20 group-hover:scale-110 transition-transform overflow-hidden">
+                {APP_CONFIG.logoUrl ? (
+                  <img src={APP_CONFIG.logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                ) : (
+                  <Heart size={20} fill="currentColor" />
+                )}
               </div>
               <span className="text-2xl font-bold text-[#2D3436] tracking-tight transition-colors">
                 Qurban<span className="text-primary italic">Ku.</span>

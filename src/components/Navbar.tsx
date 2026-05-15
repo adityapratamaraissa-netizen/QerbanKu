@@ -59,7 +59,11 @@ export default function Navbar() {
           <Link to="/" className="flex items-center space-x-2">
             <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-sm overflow-hidden">
               <div className="w-full h-full bg-gradient-to-tr from-primary to-secondary/40 flex items-center justify-center">
-                <Heart size={20} fill="currentColor" />
+                {APP_CONFIG.logoUrl ? (
+                  <img src={APP_CONFIG.logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                ) : (
+                  <Heart size={20} fill="currentColor" />
+                )}
               </div>
             </div>
             <span className="text-xl font-bold text-primary tracking-tight italic">

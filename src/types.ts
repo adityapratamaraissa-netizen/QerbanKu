@@ -40,4 +40,5 @@ export interface QurbanConfig {
   kambingPrice: number;
   sapiJointPrice: number;
   eidAlAdhaDate: string; // ISO format
+  logoUrl: string;
 }
