@@ -51,6 +51,7 @@ service cloud.firestore {
              data.participantIds is list && data.participantIds.size() <= 7 &&
              data.isFull is bool &&
              data.updatedAt == request.time &&
+             (!('participantNames' in data) || (data.participantNames is list && data.participantNames.size() <= 7)) &&
              (!('totalAmount' in data) || data.totalAmount is number);
     }
 
@@ -87,7 +88,7 @@ service cloud.firestore {
       
       allow update: if isAdmin() || (
         // Allow adding participant ID during registration
-        incoming().diff(existing()).affectedKeys().hasOnly(['participantIds', 'isFull', 'totalAmount', 'updatedAt']) &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['participantIds', 'participantNames', 'isFull', 'totalAmount', 'updatedAt']) &&
         incoming().participantIds.size() <= 7 &&
         isValidGroup(incoming())
       );

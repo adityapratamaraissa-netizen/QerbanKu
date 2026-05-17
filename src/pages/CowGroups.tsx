@@ -8,11 +8,11 @@ import { Link } from "react-router-dom";
 
 interface SapiGroup {
   id: string;
-  number: number;
+  groupNumber: number;
   participantIds: string[];
+  participantNames?: string[];
   isFull: boolean;
   totalAmount: number;
-  participantsInfo?: any[];
 }
 
 export default function CowGroups() {
@@ -22,27 +22,18 @@ export default function CowGroups() {
   useEffect(() => {
     const q = query(collection(db, "groups"), orderBy("groupNumber", "asc"));
     
-    const unsub = onSnapshot(q, async (snapshot) => {
+    const unsub = onSnapshot(q, (snapshot) => {
       const groupsData = snapshot.docs.map(doc => ({ 
         id: doc.id, 
         ...doc.data() 
       } as SapiGroup));
 
-      // For each group, we need to fetch participant names
-      // In a real app we might want to optimize this, but for now we'll do it
-      const updatedGroups = await Promise.all(groupsData.map(async (group) => {
-        if (group.participantIds.length > 0) {
-          const pQuery = query(collection(db, "participants"), where("groupId", "==", group.id));
-          const pSnap = await getDocs(pQuery);
-          const names = pSnap.docs.map(d => d.data().name);
-          return { ...group, participants: names };
-        }
-        return { ...group, participants: [] };
-      }));
-
-      setGroups(updatedGroups as any);
+      setGroups(groupsData);
       setLoading(false);
-    }, (err) => handleFirestoreError(err, OperationType.LIST, "groups"));
+    }, (err) => {
+      console.error("Firestore Error in CowGroups:", err);
+      handleFirestoreError(err, OperationType.LIST, "groups");
+    });
 
     return unsub;
   }, []);
@@ -101,7 +92,7 @@ export default function CowGroups() {
               <div className="flex justify-between items-start mb-10">
                 <div className="space-y-1">
                   <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] block mb-1">Hewan Kolektif</span>
-                  <h3 className="text-3xl font-bold text-[#2D3436] dark:text-white tracking-tight">SAPI #{group.number}</h3>
+                  <h3 className="text-3xl font-bold text-[#2D3436] dark:text-white tracking-tight">SAPI #{group.groupNumber}</h3>
                 </div>
                 {group.isFull ? (
                   <div className="bg-primary text-white text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-primary/20">
@@ -136,7 +127,7 @@ export default function CowGroups() {
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Mudhohi Anggota</p>
                   <div className="grid grid-cols-1 gap-3">
                     {Array.from({ length: 7 }).map((_, i) => {
-                      const participantName = (group as any).participants?.[i];
+                      const participantName = group.participantNames?.[i];
                       return (
                         <div key={i} className={cn(
                           "flex items-center justify-between p-4 rounded-2xl border text-sm transition-all",

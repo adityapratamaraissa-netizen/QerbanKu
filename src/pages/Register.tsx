@@ -126,6 +126,7 @@ export default function Register() {
           let groupId: string;
           let groupNumber: number;
           let participantIds: string[] = [];
+          let participantNames: string[] = [];
           let currentTotalAmount = 0;
 
           if (targetGroupId) {
@@ -137,11 +138,13 @@ export default function Register() {
                 groupId = groupDoc.id;
                 groupNumber = groupDoc.data().groupNumber;
                 participantIds = [...groupDoc.data().participantIds, participantId];
+                participantNames = [...(groupDoc.data().participantNames || []), formData.name];
                 currentTotalAmount = groupDoc.data().totalAmount || 0;
 
                 const isFull = participantIds.length >= 7;
                 transaction.update(groupDocRef, {
                   participantIds,
+                  participantNames,
                   isFull,
                   totalAmount: currentTotalAmount + amount,
                   updatedAt: serverTimestamp()
@@ -160,12 +163,14 @@ export default function Register() {
 
                 groupNumber = nextGroupNumber;
                 participantIds = [participantId];
+                participantNames = [formData.name];
                 
                 transaction.set(fallbackDocRef, {
                   id: groupId,
                   groupNumber,
                   type: "SAPI",
                   participantIds,
+                  participantNames,
                   isFull: false,
                   totalAmount: amount,
                   createdAt: serverTimestamp(),
@@ -184,12 +189,14 @@ export default function Register() {
 
             groupNumber = nextGroupNumber;
             participantIds = [participantId];
+            participantNames = [formData.name];
             
             transaction.set(newGroupDocRef, {
               id: groupId,
               groupNumber,
               type: "SAPI",
               participantIds,
+              participantNames,
               isFull: false,
               totalAmount: amount,
               createdAt: serverTimestamp(),
