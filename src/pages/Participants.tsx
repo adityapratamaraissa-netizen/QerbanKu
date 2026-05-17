@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Search, History, Users, Heart, ShieldCheck, Filter } from "lucide-react";
-import { db } from "../lib/firebase";
+import { db, handleFirestoreError, OperationType } from "../lib/firebase";
 import { collection, query, orderBy, onSnapshot, limit } from "firebase/firestore";
 import { PaymentStatus, QurbanType } from "../types";
 import { cn } from "../lib/utils";
@@ -20,26 +20,53 @@ interface ParticipantRecord {
 export default function Participants() {
   const [participants, setParticipants] = useState<ParticipantRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState<"ALL" | QurbanType>("ALL");
 
   useEffect(() => {
+    // Initial loading timeout safety
+    const timeout = setTimeout(() => {
+      if (loading) {
+        setLoading(false);
+        setError("Koneksi lambat. Silakan muat ulang halaman.");
+      }
+    }, 10000);
+
     const q = query(
       collection(db, "participants"),
-      orderBy("createdAt", "desc"),
       limit(100)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
+      clearTimeout(timeout);
       const data = snapshot.docs.map(doc => ({
         ...doc.data(),
         id: doc.id
       })) as ParticipantRecord[];
+
+      // Sort client-side
+      data.sort((a, b) => {
+        const dateA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+        const dateB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+        return dateB - dateA;
+      });
+
       setParticipants(data);
       setLoading(false);
+      setError(null);
+    }, (err) => {
+      clearTimeout(timeout);
+      console.error("Firestore Error in Participants:", err);
+      setLoading(false);
+      setError("Gagal memuat data riwayat mudhohi. Silakan segarkan halaman.");
+      handleFirestoreError(err, OperationType.LIST, "participants");
     });
 
-    return () => unsubscribe();
+    return () => {
+      clearTimeout(timeout);
+      unsubscribe();
+    };
   }, []);
 
   const filteredParticipants = participants.filter(p => {
@@ -118,6 +145,14 @@ export default function Participants() {
               <div className="py-32 flex flex-col items-center gap-4">
                 <div className="w-12 h-12 border-4 border-stone-100 border-t-primary rounded-full animate-spin"></div>
                 <p className="text-stone-400 font-medium">Memuat data mudhohi...</p>
+              </div>
+            ) : error ? (
+              <div className="py-32 text-center">
+                <History size={48} className="mx-auto text-red-100 mb-4" />
+                <p className="text-red-500 font-medium">{error}</p>
+                <button onClick={() => window.location.reload()} className="text-primary font-bold text-sm mt-4 hover:underline flex items-center justify-center gap-2 mx-auto">
+                  Segarkan Halaman
+                </button>
               </div>
             ) : filteredParticipants.length > 0 ? (
               <table className="w-full text-left min-w-[800px]">

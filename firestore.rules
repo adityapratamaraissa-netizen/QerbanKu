@@ -57,8 +57,7 @@ service cloud.firestore {
 
     // --- Rules for Participants ---
     match /participants/{participantId} {
-      allow get: if true; // Public lookup by ID for "Cek Status"
-      allow list: if isAdmin(); // Only admins can list all participants
+      allow read: if true; // Public can view list and check status
       
       allow create: if isValidId(participantId) && 
                       isValidParticipant(incoming()) && 
@@ -81,8 +80,7 @@ service cloud.firestore {
 
     // --- Rules for Groups ---
     match /groups/{groupId} {
-      allow get: if true;
-      allow list: if true; // Public can see slots
+      allow read: if true; // Public can see slots and group lists
       
       allow create: if isValidId(groupId) && isValidGroup(incoming()) && incoming().createdAt == request.time;
       

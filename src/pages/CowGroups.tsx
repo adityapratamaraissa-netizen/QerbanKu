@@ -18,31 +18,74 @@ interface SapiGroup {
 export default function CowGroups() {
   const [groups, setGroups] = useState<SapiGroup[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const q = query(collection(db, "groups"), orderBy("groupNumber", "asc"));
+    // Initial loading timeout safety
+    const timeout = setTimeout(() => {
+      if (loading) {
+        setLoading(false);
+        setError("Koneksi lambat. Silakan muat ulang halaman.");
+      }
+    }, 10000);
+
+    const q = query(collection(db, "groups"));
     
     const unsub = onSnapshot(q, (snapshot) => {
+      clearTimeout(timeout);
       const groupsData = snapshot.docs.map(doc => ({ 
         id: doc.id, 
         ...doc.data() 
       } as SapiGroup));
 
+      // Sort by groupNumber client-side to avoid index requirements for now
+      groupsData.sort((a, b) => a.groupNumber - b.groupNumber);
+
       setGroups(groupsData);
       setLoading(false);
+      setError(null);
     }, (err) => {
+      clearTimeout(timeout);
       console.error("Firestore Error in CowGroups:", err);
+      setLoading(false);
+      setError("Gagal memuat data kelompok sapi. Silakan segarkan halaman.");
       handleFirestoreError(err, OperationType.LIST, "groups");
     });
 
-    return unsub;
+    return () => {
+      clearTimeout(timeout);
+      unsub();
+    };
   }, []);
 
-  const totalSlots = groups.length * 7;
-  const filledSlots = groups.reduce((acc, g) => acc + g.participantIds.length, 0);
+  const totalSlots = (groups || []).length * 7;
+  const filledSlots = (groups || []).reduce((acc, g) => acc + (g.participantIds?.length || 0), 0);
   const availableSlots = totalSlots - filledSlots;
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Memuat kelompok...</div>;
+  if (loading) return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <p className="text-stone-500 font-medium">Memuat kelompok...</p>
+    </div>
+  );
+
+  if (error) return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-4 text-center">
+      <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center">
+        <AlertCircle size={32} />
+      </div>
+      <div className="space-y-2">
+        <h2 className="text-2xl font-bold text-stone-800">Oops! Terjadi Kesalahan</h2>
+        <p className="text-stone-500 max-w-xs">{error}</p>
+      </div>
+      <button 
+        onClick={() => window.location.reload()}
+        className="px-8 py-3 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/20"
+      >
+        Segarkan Halaman
+      </button>
+    </div>
+  );
 
   return (
     <div className="bg-[#F4F7F5] dark:bg-stone-950 min-h-screen py-24 px-4">
@@ -92,7 +135,7 @@ export default function CowGroups() {
               <div className="flex justify-between items-start mb-10">
                 <div className="space-y-1">
                   <span className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] block mb-1">Hewan Kolektif</span>
-                  <h3 className="text-3xl font-bold text-[#2D3436] dark:text-white tracking-tight">SAPI #{group.groupNumber}</h3>
+                  <h3 className="text-3xl font-bold text-[#2D3436] dark:text-white tracking-tight">SAPI #{group.groupNumber || (index + 1)}</h3>
                 </div>
                 {group.isFull ? (
                   <div className="bg-primary text-white text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-primary/20">
@@ -109,12 +152,12 @@ export default function CowGroups() {
                 <div className="space-y-4">
                    <div className="flex justify-between items-end">
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Progress Kolektif</p>
-                      <p className="text-sm font-bold text-primary">{Math.round((group.participantIds.length/7)*100)}%</p>
+                      <p className="text-sm font-bold text-primary">{Math.round(((group.participantIds?.length || 0)/7)*100)}%</p>
                    </div>
                    <div className="h-2 w-full bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden">
                       <motion.div 
                          initial={{ width: 0 }}
-                         animate={{ width: `${(group.participantIds.length/7)*100}%` }}
+                         animate={{ width: `${((group.participantIds?.length || 0)/7)*100}%` }}
                          className={cn(
                            "h-full rounded-full",
                            group.isFull ? "bg-primary" : "bg-secondary"
@@ -128,21 +171,22 @@ export default function CowGroups() {
                   <div className="grid grid-cols-1 gap-3">
                     {Array.from({ length: 7 }).map((_, i) => {
                       const participantName = group.participantNames?.[i];
+                      const participantId = group.participantIds?.[i];
                       return (
                         <div key={i} className={cn(
                           "flex items-center justify-between p-4 rounded-2xl border text-sm transition-all",
-                          participantName 
+                          participantName || participantId
                             ? "bg-gray-50 dark:bg-stone-800 border-gray-100 dark:border-stone-700 text-[#2D3436] dark:text-stone-100" 
                             : "bg-transparent border-dashed border-gray-200 dark:border-stone-800 text-stone-300"
                         )}>
                           <div className="flex items-center gap-4">
                             <span className={cn(
                               "text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border",
-                              participantName ? "border-primary/20 text-primary" : "border-stone-200 text-stone-300"
+                              participantName || participantId ? "border-primary/20 text-primary" : "border-stone-200 text-stone-300"
                             )}>{i + 1}</span>
-                            <span className="font-semibold tracking-tight">{participantName || "Menunggu Peserta..."}</span>
+                            <span className="font-semibold tracking-tight">{participantName || (participantId ? "Peserta Terdaftar" : "Menunggu Peserta...")}</span>
                           </div>
-                          {participantName && (
+                          {(participantName || participantId) && (
                              <Check size={16} className="text-primary" />
                           )}
                         </div>
